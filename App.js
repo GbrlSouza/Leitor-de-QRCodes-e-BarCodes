@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Linking, Alert } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
 const BarcodeScanner = () => {
@@ -19,7 +19,23 @@ const BarcodeScanner = () => {
     setScanned(true);
     setCodeType(type);
     setCodeData(data);
-    alert(`Código escaneado do tipo ${type} com os dados: ${data}`);
+
+    if (type === BarCodeScanner.Constants.BarCodeType.qr) {
+      // Verifica se o QR code contém um link
+      if (data.startsWith('http://') || data.startsWith('https://')) {
+        Linking.openURL(data).catch((err) => 
+          Alert.alert('Erro', 'Não foi possível abrir o link: ' + err)
+        );
+      } else {
+        alert(`QR Code escaneado: ${data}`);
+      }
+    } else {
+      // Para código de barras, realiza uma busca na web
+      const searchUrl = `https://www.google.com/search?q=produto+${data}`;
+      Linking.openURL(searchUrl).catch((err) => 
+        Alert.alert('Erro', 'Não foi possível realizar a busca: ' + err)
+      );
+    }
   };
 
   if (hasPermission === null) {
